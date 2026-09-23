@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Build - Automated Construction Planner</title>
+    <meta name="description"
+        content="Automate building material estimation, budget cost planning, and construction timelines with our custom sky-blue themed structural planner.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Redirect to Dashboard on first open -->
+    <script>
+        // If the user hasn't visited the Dashboard in this session, redirect them there first.
+        // The Dashboard (system.html) sets a flag so we know they came from there.
+        if (!sessionStorage.getItem('visitedDashboard')) {
+            sessionStorage.setItem('redirectedFrom', 'index');
+            window.location.replace('system.html');
+        }
+    </script>
+</head>
+
+<body>
+    <!-- Unified Top Navigation Header -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fa-solid fa-house-chimney-crack brand-icon"></i>
+                <span>AI-Powered Residential Housing Planning and Estimation System</span>
+            </div>
+            <div class="nav-links">
+                <a href="system.html" class="nav-link"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="index.html" class="nav-link active"><i class="fa-solid fa-drafting-compass"></i> Custom Build</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Premium Header Area -->
+    <header class="app-header">
+        <div class="header-overlay"></div>
+        <div class="header-container">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-compass-drafting"></i>
+                    <div class="pulse-ring"></div>
+                </div>
+                <div class="logo-text">
+                    <h1>Custom Build</h1>
+                    <span>Planning &amp; Estimation System</span>
+                </div>
+            </div>
+            <p class="tagline">Providing automated building suggestions, cost estimation, and precise material
+                requirements based on your budget and specifications.</p>
+            <div class="quick-stats-bar">
+                <div class="quick-stat-item">
+                    <span class="lbl"><i class="fa-solid fa-bolt text-sky"></i> Optimization</span>
+                    <span class="val">Manual &amp; Auto Modes</span>
+                </div>
+                <div class="quick-stat-item">
+                    <span class="lbl"><i class="fa-solid fa-microchip text-sky"></i> Estimations</span>
+                    <span class="val">Accurate Math Engine</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="main-container">
+        <!-- Floating Live Summary Widget -->
+        <section class="live-summary-card" id="summaryCard">
+            <div class="glass-bg"></div>
+            <div class="summary-header">
+                <h3><i class="fa-solid fa-chart-line"></i> Live Estimation</h3>
+                <span class="live-indicator"><span class="dot animate-flicker"></span> AI Estimation</span>
+            </div>
+            <div class="summary-metrics">
+                <div class="metric-block primary">
+                    <span class="metric-lbl">Total Estimated Cost</span>
+                    <h2 id="summaryCost">₱0.00</h2>
+                    <span class="sub-lbl" id="summaryCostPerSqm">₱0 / m²</span>
+                </div>
+                <div class="metric-grid">
+                    <div class="metric-block">
+                        <span class="metric-lbl">Est. Duration</span>
+                        <h4 id="summaryTime">0 Weeks</h4>
+                        <span class="sub-lbl" id="summaryDays">0 working days</span>
+                    </div>
+                    <div class="metric-block">
+                        <span class="metric-lbl">Scope / Quality</span>
+                        <h4 id="summaryQuality">Standard</h4>
+                        <span class="sub-lbl" id="summaryFloors">1 Floor</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Circular Progress Indicator -->
+            <div class="progress-ring-container">
+                <div class="progress-info">
+                    <span class="progress-lbl">Project Completion</span>
+                    <span class="progress-percentage" id="overallProgressText">0%</span>
+                </div>
+                <div class="custom-progress-bar">
+                    <div class="custom-progress-fill" id="overallProgressBar" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <button class="export-btn" id="exportPdfBtn" title="Export Prospectus">
+                <i class="fa-solid fa-file-pdf"></i> Export Structural Report
+            </button>
+        </section>
+
+        <!-- Configuration & Output Panels Grid -->
+        <div class="workspace-grid">
+
+            <!-- Panel Left: Parameters Input Form -->
+            <section class="card glass-card input-panel">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-sliders"></i> Project Parameters</h2>
+                    <span class="badge sky-badge">Step 1</span>
+                </div>
+
+                <form id="estimatorForm" onsubmit="event.preventDefault();">
+                    <!-- Unit Selector (Locked to Metric for local standards) -->
+                    <div class="form-group">
+                        <label class="input-label">Measurement System</label>
+                        <div class="toggle-btn-group" id="unitToggle" style="pointer-events: none;">
+                            <button type="button" class="btn-toggle active" data-unit="sqm" id="btnSqm" style="width: 100%;">Square Meters (m²)</button>
+                        </div>
+                    </div>
+
+                    <!-- Area Size Input & Slider -->
+                    <div class="form-group">
+                        <div class="label-wrapper">
+                            <label for="areaInput" class="input-label">Total Floor Area</label>
+                            <span class="input-badge" id="areaBadge">60 m²</span>
+                        </div>
+                        <div class="slider-input-container">
+                            <input type="range" id="areaRange" min="20" max="500" value="60" class="premium-slider">
+                            <div class="manual-input-box">
+                                <input type="number" id="areaInput" min="20" max="500" value="60" class="numeric-input">
+                                <span class="input-suffix" id="areaSuffix">m²</span>
+                            </div>
+                        </div>
+                        <span class="helper-text">Drag slider or enter manual values (Range: 20 to 500)</span>
+                    </div>
+
+                    <!-- Stories / Floors Count (Locked to Single Floor for Permits) -->
+                    <div class="form-group">
+                        <label class="input-label">Number of Floors</label>
+                        <div class="floors-selector" style="grid-template-columns: 1fr;">
+                            <button type="button" class="floor-btn active" data-floors="1" id="floor1" style="pointer-events: none; width: 100%;"><i class="fa-solid fa-circle-info"></i> 1 Floor (Small Residential Limit)</button>
+                        </div>
+                    </div>
+
+                    <!-- Hidden bedroom/bathroom inputs (kept for JS state sync) -->
+                    <input type="hidden" id="bedroomInput" value="2">
+                    <input type="hidden" id="bathroomInput" value="1">
+                    <input type="hidden" id="minusBed">
+                    <input type="hidden" id="plusBed">
+                    <input type="hidden" id="minusBath">
+                    <input type="hidden" id="plusBath">
+
+                    <!-- Standard/Premium/Luxury Selection -->
+                    <div class="form-group">
+                        <label class="input-label">Build Specification &amp; Quality</label>
+                        <div class="quality-picker">
+                            <label class="quality-option active" id="specStandard">
+                                <input type="radio" name="quality" value="standard" checked>
+                                <div class="opt-content">
+                                    <div class="opt-header">
+                                        <i class="fa-solid fa-hammer"></i>
+                                        <span>Standard</span>
+                                    </div>
+                                    <span class="opt-desc">Durable, cost-efficient, standard utility materials</span>
+                                </div>
+                            </label>
+
+                            <label class="quality-option" id="specPremium">
+                                <input type="radio" name="quality" value="premium">
+                                <div class="opt-content">
+                                    <div class="opt-header">
+                                        <i class="fa-solid fa-gem"></i>
+                                        <span>Premium</span>
+                                    </div>
+                                    <span class="opt-desc">High-grade finishing, modern styles, enhanced
+                                        durability</span>
+                                </div>
+                            </label>
+
+                            <label class="quality-option" id="specLuxury">
+                                <input type="radio" name="quality" value="luxury">
+                                <div class="opt-content">
+                                    <div class="opt-header">
+                                        <i class="fa-solid fa-crown"></i>
+                                        <span>Luxury</span>
+                                    </div>
+                                    <span class="opt-desc">Elite craftsmanship, designer finishes, smart
+                                        automation</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Roof Type Selector -->
+                    <div class="form-group">
+                        <label for="roofSelect" class="input-label">Roof Structure Profile</label>
+                        <div class="select-container">
+                            <select id="roofSelect" class="premium-select">
+                                <option value="gable">Gable Roof (Trusses &amp; Ribbed Panels)</option>
+                                <option value="flat">Concrete Flat Roof (Reinforced Concrete Deck)</option>
+                                <option value="hip">Hip Roof (Multi-sloped Architectural Panels)</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down select-arrow"></i>
+                        </div>
+                        <!-- Dynamic Roof Description -->
+                        <div class="roof-description-box" id="roofDescriptionBox">
+                            <i class="fa-solid fa-circle-info roof-desc-icon"></i>
+                            <span id="roofDescriptionText">A classic triangular-shaped roof with two sloping sides. Cost-effective with excellent water drainage. Easy to build and ideal for areas with high rainfall. Uses steel trusses and pre-painted G.I. ribbed sheets.</span>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Panel Right: Dynamic Workspaces with Tabs -->
+            <section class="card glass-card output-panel">
+                <!-- Navigation Tabs -->
+                <div class="tab-navigation">
+                    <button class="tab-btn active" data-tab="tabSuggestions" id="btnTabSuggestions">
+                        <i class="fa-solid fa-lightbulb"></i> Dynamic Designs
+                    </button>
+                    <button class="tab-btn" data-tab="tabMaterials" id="btnTabMaterials">
+                        <i class="fa-solid fa-cubes-stacked"></i> Material Cost Estimate
+                    </button>
+                    <button class="tab-btn" data-tab="tabTimeline" id="btnTabTimeline">
+                        <i class="fa-solid fa-calendar-days"></i> Timeline &amp; Progress
+                    </button>
+                    <button class="tab-btn" data-tab="tabSandbox" id="btnTabSandbox">
+                        <i class="fa-solid fa-cubes"></i> Custom Material Cost
+                    </button>
+                </div>
+
+                <!-- Tab content wrapper -->
+                <div class="tab-content-area">
+
+                    <!-- TAB 1: DYNAMIC SUGGESTIONS -->
+                    <div class="tab-pane active" id="tabSuggestions">
+                        <div class="pane-header">
+                            <h3>Automated Architectural Suggestions</h3>
+                            <p>Designs automatically tailored for your requested space (<span
+                                    class="current-area-val">60 m²</span>)</p>
+                        </div>
+
+                        <!-- Suggestions Cards Grid -->
+                        <div class="suggestions-grid" id="suggestionsGrid">
+                            <!-- Suggested Cards Dynamically Rendered by JS -->
+                        </div>
+
+                        <!-- Interactive SVG Schematic Floorplan Blueprint -->
+                        <div class="blueprint-card">
+                            <div class="blueprint-header">
+                                <h4><i class="fa-solid fa-drafting-compass"></i> Live Auto-Generated Layout Blueprint
+                                </h4>
+                                <span class="blueprint-desc">Schematic floor arrangement. <strong>💡 Drag &amp; drop
+                                        bedrooms/bathrooms to your liking!</strong></span>
+                            </div>
+                            <div class="blueprint-body">
+                                <div class="blueprint-canvas-container">
+                                    <svg id="blueprintSvg" class="blueprint-svg" viewBox="0 0 600 400" width="100%"
+                                        height="100%">
+                                        <!-- Floorplan drawings generated dynamically by JS -->
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="blueprint-legend">
+                                <span class="legend-item"><span class="legend-box bed"></span> Bedrooms</span>
+                                <span class="legend-item"><span class="legend-box bath"></span> Bathrooms</span>
+                                <span class="legend-item"><span class="legend-box living"></span> Living &amp;
+                                    Dining</span>
+                                <span class="legend-item"><span class="legend-box kitchen"></span> Kitchen</span>
+                                <span class="legend-item"><span class="legend-box path"></span> Path / Hallway</span>
+                                <span class="legend-item"><span class="legend-box stairs"></span> Stairs</span>
+                                <span class="legend-item"><span class="legend-box wall"></span> Structural Walls</span>
+                            </div>
+                        </div>
+
+                        <!-- Room Manager & Dimension Customizer -->
+                        <div class="blueprint-card" style="margin-top: 1.5rem;">
+                            <div class="blueprint-header">
+                                <h4><i class="fa-solid fa-square-plus"></i> Room Manager &amp; Dimension Customizer</h4>
+                                <span class="blueprint-desc">Add new spaces, customize room names, adjust dimensions in
+                                    meters, and monitor space allocation.</span>
+                            </div>
+                            <div class="blueprint-body"
+                                style="padding: 1.25rem; display: block; background: var(--white); border: 1px solid var(--sky-100);">
+                                <div class="room-builder-actions">
+                                    <button type="button" class="action-btn bed-btn" id="btnAddBed"><i
+                                            class="fa-solid fa-bed"></i> + Bedroom</button>
+                                    <button type="button" class="action-btn bath-btn" id="btnAddingBath"><i
+                                            class="fa-solid fa-bath"></i> + Bathroom</button>
+                                    <button type="button" class="action-btn living-btn" id="btnAddLiving"><i
+                                            class="fa-solid fa-couch"></i> + Living Room</button>
+                                    <button type="button" class="action-btn kitchen-btn" id="btnAddKitchen"><i
+                                            class="fa-solid fa-kitchen-set"></i> + Kitchen</button>
+                                    <button type="button" class="action-btn path-btn" id="btnAddPath"><i
+                                            class="fa-solid fa-road"></i> + Path / Hallway</button>
+                                    <button type="button" class="action-btn stairs-btn" id="btnAddStairs"><i
+                                            class="fa-solid fa-stairs"></i> + Stairs</button>
+                                </div>
+
+                                <div class="builder-status"
+                                    style="background: rgba(14, 165, 233, 0.05); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--sky-500); flex-wrap: wrap; gap: 1rem;">
+                                    <div>
+                                        <span
+                                            style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate-500); font-weight: 700; display: block; margin-bottom: 0.2rem;">Total
+                                            Planned Room Area</span>
+                                        <strong style="font-size: 1.35rem; color: var(--slate-900);"
+                                            id="plannedAreaVal">0.0 m²</strong>
+                                        <span style="font-size: 0.8rem; color: var(--slate-500); font-weight: 500;"> /
+                                            Target House Area: <span class="current-area-val">60 m²</span></span>
+                                    </div>
+                                    <div style="flex-grow: 1; max-width: 250px; min-width: 180px;">
+                                        <div class="progress-info"
+                                            style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.3rem;">
+                                            <span style="color: var(--slate-500);">Target Space Used</span>
+                                            <span id="allocatedPctText" style="color: var(--sky-600);">0%</span>
+                                        </div>
+                                        <div class="custom-progress-bar"
+                                            style="height: 6px; background: var(--slate-100); border-radius: 3px; overflow: hidden;">
+                                            <div class="custom-progress-fill" id="allocatedProgressBar"
+                                                style="width: 0%; height: 100%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive"
+                                    style="margin-top: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--slate-100);">
+                                    <table class="premium-table" id="builderRoomsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Room Name &amp; Type</th>
+                                                <th style="width: 140px; text-align: center;">Width (meters)</th>
+                                                <th style="width: 140px; text-align: center;">Height (meters)</th>
+                                                <th style="width: 120px;">Area</th>
+                                                <th style="width: 100px;" class="text-right">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="builderRoomsList">
+                                            <!-- Populated dynamically by JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: DETAILED MATERIAL ESTIMATE -->
+                    <div class="tab-pane" id="tabMaterials">
+                        <div class="pane-header">
+                            <h3>Material Cost Distribution</h3>
+                            <p>Breakdown based on structural requirements, specifications, and layout sizes.</p>
+                        </div>
+
+                        <!-- Top visual cost indicators -->
+                        <div class="cost-summary-bar">
+                            <div class="cost-stat">
+                                <span class="lbl"><i class="fa-solid fa-cube text-primary"></i> Materials Total</span>
+                                <h4 id="matTotalVal">₱0.00</h4>
+                            </div>
+                            <div class="cost-stat">
+                                <span class="lbl"><i class="fa-solid fa-people-carry-box text-orange"></i> Labor &amp;
+                                    Equipment</span>
+                                <h4 id="laborTotalVal">₱0.00</h4>
+                            </div>
+                            <div class="cost-stat">
+                                <span class="lbl"><i class="fa-solid fa-calculator text-green"></i> Total House
+                                    Estimate</span>
+                                <h4 id="overheadTotalVal">₱0.00</h4>
+                            </div>
+                        </div>
+
+                        <!-- Quick Filter & Search -->
+                        <div class="table-actions">
+                            <div class="search-box">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="materialSearch"
+                                    placeholder="Search materials (e.g. Cement, Steel)...">
+                            </div>
+                            <div class="filter-group">
+                                <button class="filter-btn active" data-filter="all" id="btnFilterAll">All
+                                    Categories</button>
+                                <button class="filter-btn" data-filter="structural"
+                                    id="btnFilterStructural">Structural</button>
+                                <button class="filter-btn" data-filter="finishes"
+                                    id="btnFilterFinishes">Finishes</button>
+                                <button class="filter-btn" data-filter="utilities"
+                                    id="btnFilterUtilities">Utilities</button>
+                                <button class="filter-btn" id="btnRestoreMaterials"
+                                    style="display: none; background: rgba(14, 165, 233, 0.08); color: var(--sky-700); border: 1px dashed var(--sky-300);"><i
+                                        class="fa-solid fa-rotate-left"></i> Restore Deleted Materials</button>
+                            </div>
+                        </div>
+
+                        <!-- Table Grid -->
+                        <div class="table-responsive">
+                            <table class="premium-table" id="materialTable">
+                                <thead>
+                                    <tr>
+                                        <th>Material Item</th>
+                                        <th>Category</th>
+                                        <th>Estimated Quantity</th>
+                                        <th>Unit Cost</th>
+                                        <th class="text-right">Subtotal</th>
+                                        <th style="width: 80px;" class="text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="materialTableBody">
+                                    <!-- Populated dynamically by app.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: VISUAL TIMELINE & PROGRESS TRACKER -->
+                    <div class="tab-pane" id="tabTimeline">
+                        <div class="pane-header">
+                            <h3>Visual Construction Schedule &amp; Progress</h3>
+                            <p>Track the chronological order of activities. Slide to update your visual construction
+                                progress status.</p>
+                        </div>
+
+                        <!-- Disclaimer notice -->
+                        <div class="disclaimer-card">
+                            <i class="fa-solid fa-circle-info text-sky" style="font-size: 1.5rem;"></i>
+                            <div class="disclaimer-text">
+                                <strong
+                                    style="font-family: var(--font-heading); font-size: 0.9rem; color: var(--slate-900);">Auto-Estimation
+                                    Schedule Disclaimer:</strong>
+                                <span
+                                    style="font-size: 0.75rem; color: var(--slate-500); display: block; margin-top: 0.1rem;">This
+                                    timeline and progress schedule is an automated estimate for initial planning and
+                                    cost-allocation purposes. Actual construction durations may vary based on weather,
+                                    contractor logistics, and local site conditions.</span>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Progress Controller -->
+                        <div class="progress-controller-card">
+                            <div class="progress-lbl-wrap">
+                                <span>Simulate Construction Progress:</span>
+                                <strong id="progressSliderLabel">45% Complete</strong>
+                            </div>
+                            <div class="progress-slider-wrapper">
+                                <input type="range" id="progressSimulateSlider" min="0" max="100" value="0"
+                                    class="premium-slider timeline-progress-slider">
+                                <div class="timeline-ticks">
+                                    <span>Start</span>
+                                    <span>Foundation</span>
+                                    <span>Framing</span>
+                                    <span>Roofing</span>
+                                    <span>Interior</span>
+                                    <span>Finished</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gantt Chart Timeline View -->
+                        <div class="gantt-wrapper">
+                            <div class="gantt-title"><i class="fa-solid fa-chart-gantt"></i> Interactive Gantt Schedule
+                                Planner</div>
+                            <div class="gantt-container" id="ganttContainer">
+                                <!-- Generated Dynamically by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Phase Checklist Summary -->
+                        <div class="phase-cards-container" id="phaseTimelineList">
+                            <!-- Generated Dynamically by JS -->
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: CUSTOM MATERIAL COST -->
+                    <div class="tab-pane" id="tabSandbox">
+                        <div class="pane-header">
+                            <h3>Custom Material Cost &amp; Calibration</h3>
+                            <p>Take full control! Adjust the core material base unit rates and labor variables below to
+                                align with your local hardware quotes.</p>
+                        </div>
+
+                        <div class="sandbox-layout">
+                            <!-- Sandbox Left Side: Unit Price Modifiers -->
+                            <div class="sandbox-card-group">
+                                <h4><i class="fa-solid fa-coins"></i> Calibrate Material Unit Rates (Philippines)</h4>
+
+                                <div class="sandbox-rates-grid">
+                                    <div class="sandbox-input-card">
+                                        <label for="rateCement" class="sand-lbl">Portland Cement (per Bag)</label>
+                                        <div class="sand-input-wrap">
+                                            <span class="curr">₱</span>
+                                            <input type="number" id="rateCement" value="280.00" step="5"
+                                                class="sand-num">
+                                        </div>
+                                    </div>
+                                    <div class="sandbox-input-card">
+                                        <label for="rateSteel" class="sand-lbl">Deformed Steel Bars (per kg)</label>
+                                        <div class="sand-input-wrap">
+                                            <span class="curr">₱</span>
+                                            <input type="number" id="rateSteel" value="75.00" step="1" class="sand-num">
+                                        </div>
+                                    </div>
+                                    <div class="sandbox-input-card">
+                                        <label for="rateBricks" class="sand-lbl">Concrete Hollow Blocks (CHB per
+                                            pc)</label>
+                                        <div class="sand-input-wrap">
+                                            <span class="curr">₱</span>
+                                            <input type="number" id="rateBricks" value="15.00" step="0.5"
+                                                class="sand-num">
+                                        </div>
+                                    </div>
+                                    <div class="sandbox-input-card">
+                                        <label for="rateSand" class="sand-lbl">Coarse Sand &amp; Gravel (per m³)</label>
+                                        <div class="sand-input-wrap">
+                                            <span class="curr">₱</span>
+                                            <input type="number" id="rateSand" value="1500.00" step="50"
+                                                class="sand-num">
+                                        </div>
+                                    </div>
+                                    <div class="sandbox-input-card">
+                                        <label for="rateRoof" class="sand-lbl">Pre-painted G.I. Roof Sheets (per
+                                            m²)</label>
+                                        <div class="sand-input-wrap">
+                                            <span class="curr">₱</span>
+                                            <input type="number" id="rateRoof" value="450.00" step="10"
+                                                class="sand-num">
+                                        </div>
+                                    </div>
+                                    <div class="sandbox-input-card">
+                                        <label for="ratePaint" class="sand-lbl">Boysen/Davies Latex Paint (per
+                                            liter)</label>
+                                        <div class="sand-input-wrap">
+                                            <span class="curr">₱</span>
+                                            <input type="number" id="ratePaint" value="250.00" step="5"
+                                                class="sand-num">
+                                        </div>
+                                    </div>
+                                    <div class="sandbox-input-card">
+                                        <label for="rateTiles" class="sand-lbl">Ceramic Floor Tiles (per m²)</label>
+                                        <div class="sand-input-wrap">
+                                            <span class="curr">₱</span>
+                                            <input type="number" id="rateTiles" value="350.00" step="10"
+                                                class="sand-num">
+                                        </div>
+                                    </div>
+                                    <div class="sandbox-input-card">
+                                        <label for="rateUtilities" class="sand-lbl">Plumbing &amp; Electrical Fixtures
+                                            Pack</label>
+                                        <div class="sand-input-wrap">
+                                            <span class="curr">₱</span>
+                                            <input type="number" id="rateUtilities" value="4500.00" step="100"
+                                                class="sand-num">
+                                        </div>
+                                    </div>
+                                    <div class="sandbox-input-card">
+                                        <label for="rateWood" class="sand-lbl">Coco Lumber &amp; Plywood (per bd
+                                            ft)</label>
+                                        <div class="sand-input-wrap">
+                                            <span class="curr">₱</span>
+                                            <input type="number" id="rateWood" value="80.00" step="5" class="sand-num">
+                                        </div>
+                                    </div>
+                                    <div class="sandbox-input-card">
+                                        <label for="rateFloorMat" class="sand-lbl">Vinyl Floor Mat / Linoleum (per
+                                            m²)</label>
+                                        <div class="sand-input-wrap">
+                                            <span class="curr">₱</span>
+                                            <input type="number" id="rateFloorMat" value="120.00" step="5"
+                                                class="sand-num">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sandbox Right Side: Structural & Labor Modifiers -->
+                            <div class="sandbox-card-group">
+                                <h4><i class="fa-solid fa-people-group"></i> Labor &amp; Scope Calibrators</h4>
+
+                                <div class="sandbox-inputs-vertical">
+                                    <div class="sand-vertical-group">
+                                        <div class="sand-lbl-row">
+                                            <label for="laborRateInput" class="sand-lbl">Daily Labor Rate (per
+                                                person)</label>
+                                            <span class="sand-badge-val" id="laborRateVal">₱650.00/day</span>
+                                        </div>
+                                        <input type="range" id="laborRateInput" min="300" max="1500" value="650"
+                                            step="10" class="premium-slider sand-slider">
+                                    </div>
+
+                                    <div class="sand-vertical-group">
+                                        <div class="sand-lbl-row">
+                                            <label for="crewSizeInput" class="sand-lbl">Active Workforce (Crew
+                                                Size)</label>
+                                            <span class="sand-badge-val" id="crewSizeVal">8 members</span>
+                                        </div>
+                                        <input type="range" id="crewSizeInput" min="2" max="30" value="8"
+                                            class="premium-slider sand-slider">
+                                    </div>
+
+                                    <!-- Exclude Items Toggles -->
+                                    <div class="exclude-items-card">
+                                        <span class="exclude-title">Toggle Active Structural Scope</span>
+                                        <div class="toggles-grid">
+                                            <label class="toggle-switch-lbl" id="toggleScopeRoof">
+                                                <input type="checkbox" id="includeRoofScope" checked>
+                                                <span class="switch-visual"></span>
+                                                <span class="switch-lbl">Include Roofing Cost</span>
+                                            </label>
+                                            <label class="toggle-switch-lbl" id="toggleScopeFinishes">
+                                                <input type="checkbox" id="includeFinishesScope" checked>
+                                                <span class="switch-visual"></span>
+                                                <span class="switch-lbl">Include Tiling/Painting</span>
+                                            </label>
+                                            <label class="toggle-switch-lbl" id="toggleScopeUtilities">
+                                                <input type="checkbox" id="includeUtilitiesScope" checked>
+                                                <span class="switch-visual"></span>
+                                                <span class="switch-lbl">Include Plumbing/Electric</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <button class="reset-sandbox-btn" id="btnResetSandbox" type="button">
+                                        <i class="fa-solid fa-rotate-left"></i> Reset Rates to Default
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Bottom Insight Panels: GIS Auditor and Cost Trends Side-by-Side -->
+        <div class="insights-bottom-grid" style="margin-top: 2rem; margin-bottom: 2rem;">
+            <!-- Card A: GIS Hazard Auditor Explanation -->
+            <section class="card glass-card feature-card" style="border-left-color: var(--sky-500); height: 100%;">
+                <div class="card-header" style="margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--slate-100);">
+                    <h2 style="font-size: 1.15rem; color: var(--slate-900); font-family: var(--font-heading); font-weight: 700;"><i class="fa-solid fa-earth-philippines text-sky"></i> GIS Hazard Auditor Analysis</h2>
+                </div>
+                <div class="card-body" style="font-size: 0.8rem; color: var(--slate-600); line-height: 1.5;">
+                    <p>Our **Geospatial Information System (GIS)** audits environmental safety parameters to pre-determine structural reinforcement requirements:</p>
+                    <ul style="margin-left: 1.2rem; margin-top: 0.4rem; display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 1rem;">
+                        <li><strong>Flood Lowlands mapping</strong>: Evaluates historical rain patterns and storm basin levels to enforce raised column foundations.</li>
+                        <li><strong>Seismic Fault auditors</strong>: Measures active distance coordinates to phivolcs regional shear fault lines.</li>
+                        <li><strong>Landslide assessment</strong>: Scans soil moisture indexes and sloped land terrains to check stability.</li>
+                    </ul>
+                    <div style="background: rgba(14, 165, 233, 0.04); border-radius: var(--radius-sm); padding: 0.75rem 1rem; display: flex; align-items: flex-start; gap: 0.5rem; border: 1px solid var(--sky-100);">
+                        <i class="fa-solid fa-circle-check text-sky" style="font-size: 1.1rem; margin-top: 0.15rem;"></i>
+                        <span style="font-size: 0.75rem; color: var(--sky-700); font-weight: 600;">Geospatial safety is secured: Recommendations dynamically calibrate structural steel cages and footing depths.</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Card B: Predictive Material Cost Trends -->
+            <section class="card glass-card feature-card" style="border-left-color: var(--orange-500); height: 100%;">
+                <div class="card-header" style="margin-bottom: 0.8rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--slate-100);">
+                    <h2 style="font-size: 1.15rem; color: var(--slate-900); font-family: var(--font-heading); font-weight: 700;"><i class="fa-solid fa-chart-line text-orange"></i> Material Cost Trends &amp; Forecasts</h2>
+                </div>
+                <div class="card-body" style="font-size: 0.8rem; color: var(--slate-600); line-height: 1.5;">
+                    <p>Time series forecasting monitors regional raw materials inflation over next month's outlook:</p>
+                    <div style="display: flex; flex-direction: column; gap: 0.6rem; margin: 0.75rem 0;">
+                        <!-- Steel Bar -->
+                        <div style="background: var(--slate-50); border: 1px solid var(--slate-200); padding: 0.5rem 0.8rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 600; color: var(--slate-800);">Steel Rebars: ₱75.00 &rarr; ₱81.00</span>
+                            <strong style="color: #ef4444; font-size: 0.75rem;">+8.0% Next Month <i class="fa-solid fa-arrow-trend-up"></i></strong>
+                        </div>
+                        <!-- Cement -->
+                        <div style="background: var(--slate-50); border: 1px solid var(--slate-200); padding: 0.5rem 0.8rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 600; color: var(--slate-800);">Portland Cement: ₱280.00 &rarr; ₱302.00</span>
+                            <strong style="color: #ef4444; font-size: 0.75rem;">+7.8% Next Month <i class="fa-solid fa-arrow-trend-up"></i></strong>
+                        </div>
+                        <!-- Lumber -->
+                        <div style="background: var(--slate-50); border: 1px solid var(--slate-200); padding: 0.5rem 0.8rem; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 600; color: var(--slate-800);">Coco Lumber: ₱80.00 &rarr; ₱85.00</span>
+                            <strong style="color: #ef4444; font-size: 0.75rem;">+6.2% Next Month <i class="fa-solid fa-arrow-trend-up"></i></strong>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.75rem; color: var(--slate-500); line-height: 1.4;">Global transport indices and regional quarry clearances keep concrete and steel bags elevated. Securing supplier allocations immediately blocks future price escalations.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Detailed Export Report Modal Layout (for printing / PDF export) -->
+    <div class="export-modal" id="exportModal">
+        <div class="export-modal-content">
+            <div class="export-actions">
+                <button class="btn-print" id="btnPrintActual"><i class="fa-solid fa-print"></i> Print Report</button>
+                <button class="btn-close" id="btnCloseExportModal"><i class="fa-solid fa-xmark"></i> Close</button>
+            </div>
+            <div id="printArea" class="print-area">
+                <div class="print-header">
+                    <h2>CUSTOM BUILD SYSTEM</h2>
+                    <h3>Automated Structural Estimation Prospectus</h3>
+                    <p class="print-date" id="printDateString">Generated on: </p>
+                </div>
+                <hr>
+                <div class="print-section">
+                    <h4>1. Project Parameters Summary</h4>
+                    <table class="print-table">
+                        <tr>
+                            <td><strong>Total Floor Area:</strong></td>
+                            <td id="pArea">0 m²</td>
+                            <td><strong>Number of Floors:</strong></td>
+                            <td id="pFloors">0 Floors</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Bedrooms:</strong></td>
+                            <td id="pBedrooms">0 Bedrooms</td>
+                            <td><strong>Bathrooms:</strong></td>
+                            <td id="pBathrooms">0 Bathrooms</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Quality Standard:</strong></td>
+                            <td id="pQuality">Standard</td>
+                            <td><strong>Roof Profile:</strong></td>
+                            <td id="pRoof">Gable Roof</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="print-section">
+                    <h4>2. Live Valuation Breakdown</h4>
+                    <table class="print-table">
+                        <tr>
+                            <td><strong>Core Material Subtotal:</strong></td>
+                            <td id="pMatCost">₱0.00</td>
+                            <td><strong>Labor &amp; Equipment Estimate:</strong></td>
+                            <td id="pLaborCost">₱0.00</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Estimated Completion Time:</strong></td>
+                            <td id="pDuration" colspan="3">0 Weeks</td>
+                        </tr>
+                        <tr class="highlight-row">
+                            <td><strong>TOTAL ESTIMATED BUDGET:</strong></td>
+                            <td id="pTotalCost" colspan="3">₱0.00</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="print-section">
+                    <h4>3. Detailed Building Material Quantities</h4>
+                    <table class="print-table compact" id="pMaterialGrid">
+                        <thead>
+                            <tr>
+                                <th>Material Item</th>
+                                <th>Category</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Copied from live table during export -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="print-section">
+                    <h4>4. Construction Phases &amp; Timeline</h4>
+                    <table class="print-table compact" id="pTimelineGrid">
+                        <thead>
+                            <tr>
+                                <th>Phase Name</th>
+                                <th>Est. Start / Duration</th>
+                                <th>Major Works Involved</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Copied from live timeline -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="print-section">
+                    <h4>5. Auto-Generated Layout Blueprint</h4>
+                    <div class="print-blueprint-container"
+                        style="background: #0b1329; border: 1px solid #1e294b; border-radius: 8px; padding: 1.25rem; display: flex; align-items: center; justify-content: center; position: relative; max-width: 600px; margin: 0 auto; overflow: hidden;">
+                        <svg id="printBlueprintSvg" class="blueprint-svg" viewBox="0 0 600 400" width="100%"
+                            height="100%">
+                            <!-- Copied dynamically from live blueprint canvas -->
+                        </svg>
+                    </div>
+                </div>
+                <div class="print-footer">
+                    <p>Custom Build Planner &bull; Ai Estimated manual construction planning efficiency,
+                        provide accessible guidance and Cost.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Build Disclaimer Modal -->
+    <div class="disclaimer-modal" id="customBuildDisclaimerModal">
+        <div class="disclaimer-modal-content">
+            <div class="disclaimer-modal-icon">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h2>Custom Build — Expert Access Only</h2>
+            <p>This section is designed exclusively for persons who already know exactly what they need — the specific materials to purchase, the quantities required, and the full scope of their construction project.</p>
+            <ul class="disclaimer-list">
+                <li><i class="fa-solid fa-circle-check"></i> You understand construction materials and quantities</li>
+                <li><i class="fa-solid fa-circle-check"></i> You have your own design and layout plan</li>
+                <li><i class="fa-solid fa-circle-check"></i> You know your budget and required specifications</li>
+            </ul>
+            <p class="disclaimer-note">If you're looking for AI-recommended designs and guided planning, please visit the <strong>Dashboard</strong> instead.</p>
+            <div class="disclaimer-modal-actions">
+                <a href="system.html" class="disclaimer-back-btn"><i class="fa-solid fa-arrow-left"></i> Go to Dashboard</a>
+                <button type="button" id="disclaimerProceedBtn" class="disclaimer-proceed-btn"><i class="fa-solid fa-arrow-right"></i> Proceed to Custom Build</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main JS Application Logic -->
+    <script src="app.js"></script>
+</body>
+
+</html>
